@@ -5,7 +5,6 @@ springdoc:
     enabled: true
     path: /swagger-ui.html
 
-# Info opcional
 info:
   app:
     name: Trading Portal MS
@@ -33,3 +32,8 @@ spring:
 
   jackson:
     time-zone: America/Mexico_City
+app:
+  security:
+    jwt:
+      secret: "zvrpLUMxCzL#!L*m2xEgT%GpSPaCzizJ60I8wSAtonvc53O6E6417vFM^gH5mieD"
+      expiration-ms: 86400000  # 24 horas

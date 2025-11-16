@@ -17,7 +17,6 @@ public class Account {
     private Long id;
 
     // Alias para ti: "Neomaa 25K 2-step Fase 1", "Real Pepperstone", etc.
-    @Column(length = 255)
     private String description;
 
     // Número / ID de cuenta en broker/prop firm
