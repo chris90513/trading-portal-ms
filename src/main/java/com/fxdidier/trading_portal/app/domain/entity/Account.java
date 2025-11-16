@@ -59,6 +59,10 @@ public class Account {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @PrePersist
     protected void onCreate() {
         OffsetDateTime now = OffsetDateTime.now();

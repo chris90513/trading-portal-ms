@@ -126,4 +126,8 @@ public class Trade {
 
     @Column(name = "what_to_improve", columnDefinition = "text")
     private String whatToImprove;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

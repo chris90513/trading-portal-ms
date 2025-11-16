@@ -20,6 +20,16 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    private String email;
+
+    private  String firstName;
+
+    private String lastName;
+
+    @Column(name = "phone_number", length = 20, unique = true)
+    private String phoneNumber;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
     private Role role = Role.ROLE_USER;
