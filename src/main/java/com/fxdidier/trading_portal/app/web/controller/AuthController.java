@@ -8,11 +8,13 @@ import com.fxdidier.trading_portal.app.web.model.AuthResponse;
 import com.fxdidier.trading_portal.app.web.model.RegisterRequest;
 import com.fxdidier.trading_portal.app.web.model.UserDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,11 +40,14 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
-    // Registro de usuario (lo puedes dejar solo para admins luego)
+
+    /**
+     * Registro público: siempre ROLE_USER (la lógica está en UserService).
+     */
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody RegisterRequest request) {
-        UserDto user = userService.register(request);
-        return ResponseEntity.ok(user);
+        UserDto created = userService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     // Refresh de token: recibe el viejo y genera uno nuevo si es válido
@@ -58,5 +63,14 @@ public class AuthController {
         String newToken = jwtService.generateToken(username);
 
         return ResponseEntity.ok(new AuthResponse(newToken));
+    }
+
+    /**
+     * Usuario actual (cualquier usuario autenticado).
+     * Puedes dejar esto aquí o moverlo a UserController, como prefieras.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> me(Principal principal) {
+        return ResponseEntity.ok(userService.getCurrentUser(principal));
     }
 }

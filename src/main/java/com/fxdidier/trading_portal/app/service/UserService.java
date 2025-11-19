@@ -2,6 +2,7 @@ package com.fxdidier.trading_portal.app.service;
 
 import com.fxdidier.trading_portal.app.domain.entity.User;
 import com.fxdidier.trading_portal.app.domain.repository.UserRepository;
+import com.fxdidier.trading_portal.app.web.model.AdminCreateUserRequest;
 import com.fxdidier.trading_portal.app.web.model.RegisterRequest;
 import com.fxdidier.trading_portal.app.web.model.UserDto;
 import com.fxdidier.trading_portal.util.enums.Role;
@@ -26,9 +27,26 @@ public class UserService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.isAdmin() ? Role.ROLE_ADMIN : Role.ROLE_USER);
+        user.setRole(Role.ROLE_USER);
         user.setEnabled(true);
 
+        user = userRepository.save(user);
+        return toDto(user);
+    }
+
+    /**
+     * Creación de usuarios desde el panel admin
+     */
+    public UserDto createUserByAdmin(AdminCreateUserRequest request) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("El usuario ya existe");
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+        user.setEnabled(request.isEnabled());
         user = userRepository.save(user);
         return toDto(user);
     }

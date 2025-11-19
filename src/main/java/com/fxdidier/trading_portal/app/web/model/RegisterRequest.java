@@ -8,5 +8,4 @@ import lombok.Setter;
 public class RegisterRequest {
     private String username;
     private String password;
-    private boolean admin;   // si quieres marcar desde aquí si es admin
 }
