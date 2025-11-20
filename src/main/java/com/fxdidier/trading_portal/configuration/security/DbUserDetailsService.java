@@ -1,4 +1,4 @@
-package com.fxdidier.trading_portal.app.service;
+package com.fxdidier.trading_portal.configuration.security;
 
 import com.fxdidier.trading_portal.app.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class DbUserDetailsService implements UserDetailsService {
+
     private final UserRepository userRepository;
 
     @Override
@@ -24,14 +25,6 @@ public class DbUserDetailsService implements UserDetailsService {
 
         var authorities = List.of(new SimpleGrantedAuthority(user.getRole().name()));
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.isEnabled(),
-                true,
-                true,
-                true,
-                authorities
-        );
+        return new CustomUserDetails(user, authorities);
     }
 }

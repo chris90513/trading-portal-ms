@@ -1,7 +1,5 @@
 package com.fxdidier.trading_portal.configuration.security;
 
-import com.fxdidier.trading_portal.app.service.DbUserDetailsService;
-import com.fxdidier.trading_portal.app.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -31,7 +28,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Si no hay header Authorization o no es Bearer, dejamos seguir la cadena
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -43,18 +39,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (username != null
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            CustomUserDetails userDetails =
+                    (CustomUserDetails) userDetailsService.loadUserByUsername(username);
 
             if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
+
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
-                                userDetails,
+                                userDetails,     // ⬅ PRINCIPAL ES CustomUserDetails
                                 null,
                                 userDetails.getAuthorities()
                         );
+
                 authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
+
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

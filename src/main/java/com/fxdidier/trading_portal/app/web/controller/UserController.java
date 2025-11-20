@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import com.fxdidier.trading_portal.configuration.security.CurrentUserService;
 import java.security.Principal;
 import java.util.List;
 
@@ -18,6 +18,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final CurrentUserService currentUserService;
 
     // Solo ADMIN puede listar usuarios
     @GetMapping
@@ -46,10 +47,11 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // Usuario actual (cualquier usuario logueado)
     @GetMapping("/me")
-    public ResponseEntity<UserDto> me(Principal principal) {
-        return ResponseEntity.ok(userService.getCurrentUser(principal));
+    public ResponseEntity<UserDto> me() {
+        Long id = currentUserService.getId();
+        UserDto dto = userService.findById(id);
+        return ResponseEntity.ok(dto);
     }
 
     /**
