@@ -14,11 +14,9 @@ public class AccountStatus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 'ACTIVE','PASSED','FAILED','RESET','ARCHIVED'
     @Column(nullable = false, unique = true, length = 30)
     private String code;
 
-    // 'Activa','Pasada','Fallida','Reset','Archivada'
     @Column(nullable = false, length = 100)
     private String name;
 
