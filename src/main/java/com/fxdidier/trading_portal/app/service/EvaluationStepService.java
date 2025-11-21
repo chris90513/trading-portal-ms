@@ -6,16 +6,22 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class EvaluationStepService {
 
-    private final EvaluationStepRepository evaluationStepRepository;
+    private final EvaluationStepRepository repository;
 
     @Transactional(readOnly = true)
     public EvaluationStep getByIdOrThrow(Long id) {
-        return evaluationStepRepository.findById(id)
+        return repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("EvaluationStep not found with id: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<EvaluationStep> getAllActive() {
+        return repository.findByActiveTrueOrderByStepOrderAscNameAsc();
     }
 }

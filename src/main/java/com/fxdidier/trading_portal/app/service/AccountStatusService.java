@@ -8,15 +8,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AccountStatusService {
 
-    private final AccountStatusRepository accountStatusRepository;
+    private final AccountStatusRepository repository;
 
     @Transactional(readOnly = true)
     public AccountStatus getByIdOrThrow(Long id) {
-        return accountStatusRepository.findById(id)
+        return repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("AccountStatus not found with id: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AccountStatus> getAllActive() {
+        return repository.findByActiveTrueOrderByNameAsc();
     }
 }
