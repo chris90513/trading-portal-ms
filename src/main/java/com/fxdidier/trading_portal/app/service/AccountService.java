@@ -2,7 +2,11 @@ package com.fxdidier.trading_portal.app.service;
 
 import com.fxdidier.trading_portal.app.domain.entity.*;
 import com.fxdidier.trading_portal.app.domain.repository.AccountRepository;
+import com.fxdidier.trading_portal.app.web.mapper.AccountMapper;
+import com.fxdidier.trading_portal.app.web.model.AccountDetailDto;
 import com.fxdidier.trading_portal.app.web.model.AccountRequest;
+import com.fxdidier.trading_portal.app.web.model.AccountSummaryDto;
+import com.fxdidier.trading_portal.app.web.model.PageResponse;
 import com.fxdidier.trading_portal.configuration.security.CurrentUserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,51 +27,40 @@ public class AccountService {
     private final EvaluationStepService evaluationStepService;
     private final AccountStatusService accountStatusService;
     private final UserService userService;
-
     private final CurrentUserService currentUserService;
+    private final AccountMapper accountMapper;
 
-    // -------- LISTAR --------
 
-    /**
-     * USER normal: solo sus cuentas
-     * ADMIN: todas las cuentas
-     */
+
     @Transactional(readOnly = true)
-    public Page<Account> findForCurrentUser(Pageable pageable) {
+    public PageResponse<AccountSummaryDto> findSummariesForCurrentUser(Pageable pageable) {
         Long currentUserId = currentUserService.getId();
         boolean isAdmin = currentUserService.isAdmin();
 
-        if (isAdmin) {
-            return accountRepository.findAll(pageable);
-        }
-        return accountRepository.findByUserId(currentUserId, pageable);
+        Page<Account> page = isAdmin
+                ? accountRepository.findAll(pageable)
+                : accountRepository.findByUserId(currentUserId, pageable);
+
+        Page<AccountSummaryDto> dtoPage = page.map(accountMapper::toSummaryDto);
+
+        return PageResponse.from(dtoPage);
     }
 
-    /**
-     * Pensado para uso desde endpoints de admin (p. ej. /api/accounts/by-user/{userId})
-     * La verificación de rol se hace a nivel controller con @PreAuthorize.
-     */
-    @Transactional(readOnly = true)
-    public Page<Account> findByUser(Long userId, Pageable pageable) {
-        return accountRepository.findByUserId(userId, pageable);
-    }
 
     @Transactional(readOnly = true)
-    public Account findById(Long id) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Account not found with id: " + id));
-
-        Long currentUserId = currentUserService.getId();
-        boolean isAdmin = currentUserService.isAdmin();
-
-        if (!isAdmin && !account.getUser().getId().equals(currentUserId)) {
-            throw new SecurityException("You are not allowed to access this account");
-        }
-
-        return account;
+    public PageResponse<AccountSummaryDto> findByUser(Long userId, Pageable pageable) {
+        Page<Account> page = accountRepository.findByUserId(userId, pageable);
+        Page<AccountSummaryDto> dtoPage = page.map(accountMapper::toSummaryDto);
+        return PageResponse.from(dtoPage);
     }
 
-    // -------- CREAR --------
+    @Transactional(readOnly = true)
+    public AccountDetailDto findDetailById(Long id) {
+        Account account = findById(id);
+        return accountMapper.toDetailDto(account);
+    }
+
+
 
     @Transactional
     public Account create(AccountRequest request) {
@@ -75,13 +68,12 @@ public class AccountService {
             throw new IllegalArgumentException("Account number already exists");
         }
 
-        Account account = new Account();
+        Account account = accountMapper.toEntity(request);
         applyRequestToEntity(account, request);
 
         return accountRepository.save(account);
     }
 
-    // -------- ACTUALIZAR --------
 
     @Transactional
     public Account update(Long id, AccountRequest request) {
@@ -100,9 +92,27 @@ public class AccountService {
             throw new IllegalArgumentException("Account number already exists");
         }
 
+        accountMapper.updateEntityFromRequest(request, account);
         applyRequestToEntity(account, request);
+
         return accountRepository.save(account);
     }
+
+    @Transactional(readOnly = true)
+    public Account findById(Long id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found with id: " + id));
+
+        Long currentUserId = currentUserService.getId();
+        boolean isAdmin = currentUserService.isAdmin();
+
+        if (!isAdmin && !account.getUser().getId().equals(currentUserId)) {
+            throw new SecurityException("You are not allowed to access this account");
+        }
+
+        return account;
+    }
+
 
     // -------- ELIMINAR --------
 

@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,11 +18,12 @@ import java.util.UUID;
 @Component
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
+    private static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
+    private static final String MDC_CORRELATION_ID = "correlationId";
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
-
-        // No spamear logs con swagger, actuator, etc.
         return uri.startsWith("/v3/api-docs")
                 || uri.startsWith("/swagger-ui")
                 || uri.startsWith("/actuator");
@@ -35,25 +37,48 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
         long start = System.currentTimeMillis();
 
+        // 1️⃣ Obtener o generar correlationId
+        String correlationId = request.getHeader(CORRELATION_ID_HEADER);
+
+        if (correlationId == null || correlationId.isBlank()) {
+            correlationId = UUID.randomUUID().toString().substring(0, 8);
+        }
+
+        // 2️⃣ Guardar en MDC (para que salga en TODOS los logs)
+        MDC.put(MDC_CORRELATION_ID, correlationId);
+
+        // 3️⃣ Añadirlo a la respuesta
+        response.setHeader(CORRELATION_ID_HEADER, correlationId);
+
         String method = request.getMethod();
         String uri = request.getRequestURI();
-        String requestId = UUID.randomUUID().toString().substring(0, 8);
 
-        // Usuario autenticado (si lo hay)
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = (auth != null && auth.isAuthenticated())
-                ? auth.getName()
+        // Usuario ANTES del JWT (suele ser anonymous)
+        Authentication authBefore = SecurityContextHolder.getContext().getAuthentication();
+        String usernameBefore = (authBefore != null && authBefore.isAuthenticated())
+                ? authBefore.getName()
                 : "anonymous";
 
-        // Log de entrada
-        log.info("[{}] --> {} {} (user={})", requestId, method, uri, username);
+        log.info("[{}] --> {} {} (user={})",
+                correlationId, method, uri, usernameBefore);
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            long duration = System.currentTimeMillis() - start;
+            int status = response.getStatus();
 
-        long duration = System.currentTimeMillis() - start;
-        int status = response.getStatus();
+            // Usuario DESPUÉS del JWT (ya autenticado)
+            Authentication authAfter = SecurityContextHolder.getContext().getAuthentication();
+            String usernameAfter = (authAfter != null && authAfter.isAuthenticated())
+                    ? authAfter.getName()
+                    : usernameBefore;
 
-        // Log de salida
-        log.info("[{}] <-- {} {} -> {} ({} ms)", requestId, method, uri, status, duration);
+            log.info("[{}] <-- {} {} -> {} ({} ms) (user={})",
+                    correlationId, method, uri, status, duration, usernameAfter);
+
+            // Importante: limpiar MDC al final
+            MDC.clear();
+        }
     }
 }
