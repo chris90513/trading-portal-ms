@@ -10,7 +10,6 @@ info:
     name: Trading Portal MS
     description: Backend para portal de bitácora y analíticas de trading
     version: 0.0.1
-
 server:
   port: 8081
 spring:
