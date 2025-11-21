@@ -15,13 +15,24 @@ public class StrategyConfirmation {
     private Long id;
 
     // Estrategia a la que pertenece
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "strategy_id")
     private Strategy strategy;
 
     @Column(nullable = false, length = 50)
-    private String code;   // "LIQUIDITY_TAKE_5M", "ENGULFING_OB_5M"
+    private String code;
 
     @Column(nullable = false, length = 150)
-    private String name;   // "Toma de Liquidez 5M", "Envolvente 5M en OB"
+    private String name;
+
+
+
+    // true = confirmación global (para todos)
+    @Column(name = "is_global", nullable = false)
+    private boolean global = false;
+
+    // propietario cuando no es global
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User owner;
 }
