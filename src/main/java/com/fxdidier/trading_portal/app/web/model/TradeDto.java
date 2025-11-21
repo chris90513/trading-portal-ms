@@ -7,6 +7,7 @@ import java.util.Set;
 
 public record TradeDto(
         Long id,
+
         Long accountId,
         String accountDescription,
 
@@ -31,11 +32,22 @@ public record TradeDto(
 
         Integer pipsSL,
         Integer pipsTP,
+        Integer pipsResult,
+
+        BigDecimal entryPrice,
+        BigDecimal exitPrice,
+        BigDecimal positionSize,
+
+        BigDecimal riskAmount,
+        BigDecimal realRR,
 
         BigDecimal grossPnl,
         BigDecimal commission,
+        BigDecimal swap,
         BigDecimal netPnl,
         BigDecimal maxRR,
+
+        String brokerTicket,
 
         Set<Emotion> emotions,
 

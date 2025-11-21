@@ -37,11 +37,27 @@ public record TradeRequest(
 
         Integer pipsSL,
         Integer pipsTP,
+        Integer pipsResult,
+
+        @NotNull
+        BigDecimal entryPrice,
+
+        @NotNull
+        BigDecimal exitPrice,
+
+        @NotNull
+        BigDecimal positionSize,
+
+        BigDecimal riskAmount,
+        BigDecimal realRR,
 
         BigDecimal grossPnl,
         BigDecimal commission,
+        BigDecimal swap,
         BigDecimal netPnl,
         BigDecimal maxRR,
+
+        String brokerTicket,
 
         Set<Emotion> emotions,
 

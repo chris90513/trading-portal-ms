@@ -68,41 +68,19 @@ public class TradeService {
         Long currentUserId = currentUserService.getId();
         boolean isAdmin = currentUserService.isAdmin();
 
-        // Sólo admin puede crear trades en cuentas de otros
+        // Usuario normal solo puede crear trades en sus cuentas
         if (!isAdmin && !account.getUser().getId().equals(currentUserId)) {
             throw new SecurityException("You are not allowed to create trades on this account");
         }
 
         Trade trade = tradeMapper.toEntity(request);
 
-        // Relación con cuenta y usuario (dueño)
+        // relaciones principales
         trade.setAccount(account);
         trade.setUser(account.getUser());
 
-        // Relaciones opcionales
-        if (request.strategyId() != null) {
-            Strategy strategy = strategyRepository.findById(request.strategyId())
-                    .orElseThrow(() -> new EntityNotFoundException("Strategy not found with id: " + request.strategyId()));
-            trade.setStrategy(strategy);
-        } else {
-            trade.setStrategy(null);
-        }
-
-        if (request.directionId() != null) {
-            StrategyDirection direction = strategyDirectionRepository.findById(request.directionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Direction not found with id: " + request.directionId()));
-            trade.setDirection(direction);
-        } else {
-            trade.setDirection(null);
-        }
-
-        if (request.confirmationId() != null) {
-            StrategyConfirmation confirmation = strategyConfirmationRepository.findById(request.confirmationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Confirmation not found with id: " + request.confirmationId()));
-            trade.setConfirmation(confirmation);
-        } else {
-            trade.setConfirmation(null);
-        }
+        // relaciones opcionales
+        applyStrategyRelations(request, trade);
 
         Trade saved = tradeRepository.save(trade);
         return tradeMapper.toDto(saved);
@@ -123,10 +101,10 @@ public class TradeService {
             throw new SecurityException("You are not allowed to update this trade");
         }
 
-        // Aplicar cambios básicos (no relaciones)
+        // campos simples
         tradeMapper.updateEntityFromRequest(request, trade);
 
-        // Si cambia la cuenta
+        // si cambia la cuenta
         if (!trade.getAccount().getId().equals(request.accountId())) {
             Account newAccount = accountRepository.findById(request.accountId())
                     .orElseThrow(() -> new EntityNotFoundException("Account not found with id: " + request.accountId()));
@@ -139,30 +117,8 @@ public class TradeService {
             trade.setUser(newAccount.getUser());
         }
 
-        // Relaciones opcionales
-        if (request.strategyId() != null) {
-            Strategy strategy = strategyRepository.findById(request.strategyId())
-                    .orElseThrow(() -> new EntityNotFoundException("Strategy not found with id: " + request.strategyId()));
-            trade.setStrategy(strategy);
-        } else {
-            trade.setStrategy(null);
-        }
-
-        if (request.directionId() != null) {
-            StrategyDirection direction = strategyDirectionRepository.findById(request.directionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Direction not found with id: " + request.directionId()));
-            trade.setDirection(direction);
-        } else {
-            trade.setDirection(null);
-        }
-
-        if (request.confirmationId() != null) {
-            StrategyConfirmation confirmation = strategyConfirmationRepository.findById(request.confirmationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Confirmation not found with id: " + request.confirmationId()));
-            trade.setConfirmation(confirmation);
-        } else {
-            trade.setConfirmation(null);
-        }
+        // relaciones opcionales
+        applyStrategyRelations(request, trade);
 
         Trade saved = tradeRepository.save(trade);
         return tradeMapper.toDto(saved);
@@ -184,5 +140,43 @@ public class TradeService {
         }
 
         tradeRepository.delete(trade);
+    }
+
+    // -------- Helper para relaciones de estrategia --------
+
+    private void applyStrategyRelations(TradeRequest request, Trade trade) {
+
+        // Strategy
+        if (request.strategyId() != null) {
+            Strategy strategy = strategyRepository.findById(request.strategyId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Strategy not found with id: " + request.strategyId()
+                    ));
+            trade.setStrategy(strategy);
+        } else {
+            trade.setStrategy(null);
+        }
+
+        // Direction
+        if (request.directionId() != null) {
+            StrategyDirection direction = strategyDirectionRepository.findById(request.directionId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Direction not found with id: " + request.directionId()
+                    ));
+            trade.setDirection(direction);
+        } else {
+            trade.setDirection(null);
+        }
+
+        // Confirmation
+        if (request.confirmationId() != null) {
+            StrategyConfirmation confirmation = strategyConfirmationRepository.findById(request.confirmationId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Confirmation not found with id: " + request.confirmationId()
+                    ));
+            trade.setConfirmation(confirmation);
+        } else {
+            trade.setConfirmation(null);
+        }
     }
 }

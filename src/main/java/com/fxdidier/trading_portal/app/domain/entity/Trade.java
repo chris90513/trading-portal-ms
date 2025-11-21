@@ -4,15 +4,12 @@ import com.fxdidier.trading_portal.util.enums.*;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-
 @Entity
 @Table(name = "trades")
 @Getter
@@ -23,35 +20,12 @@ public class Trade {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Relación con la cuenta
+    // --------------------- RELACIONES ---------------------
+
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    private Symbol symbol;
-
-    // Fecha y hora de apertura
-    @Column(name = "opened_at", nullable = false)
-    private OffsetDateTime openedAt;
-
-    // Fecha y hora de cierre
-    @Column(name = "closed_at", nullable = false)
-    private OffsetDateTime closedAt;
-
-    // Long o Short
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    private TradeSide side;
-
-    // Estado: TP, SL, BE
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    private TradeOut status;
-
-    // Estrategia (relación)
     @ManyToOne
     @JoinColumn(name = "strategy_id")
     private Strategy strategy;
@@ -64,6 +38,34 @@ public class Trade {
     @JoinColumn(name = "confirmation_id")
     private StrategyConfirmation confirmation;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    // --------------------- DATOS DEL TRADE ---------------------
+
+    // Ticket único del broker / prop firm
+    @Column(name = "broker_ticket", length = 50)
+    private String brokerTicket;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private Symbol symbol;
+
+    @Column(name = "opened_at", nullable = false)
+    private OffsetDateTime openedAt;
+
+    @Column(name = "closed_at", nullable = false)
+    private OffsetDateTime closedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private TradeSide side;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private TradeOut status;
+
     @Enumerated(EnumType.STRING)
     private Bias dailyBias;
 
@@ -73,28 +75,55 @@ public class Trade {
     @Column(name = "bias_correct")
     private Boolean biasCorrect;
 
-    // Pips SL y TP
+    // --------------------- PRECIOS ---------------------
+
+    @Column(name = "entry_price", precision = 15, scale = 5, nullable = false)
+    private BigDecimal entryPrice;
+
+    @Column(name = "exit_price", precision = 15, scale = 5, nullable = false)
+    private BigDecimal exitPrice;
+
+    @Column(name = "position_size", precision = 10, scale = 2, nullable = false)
+    private BigDecimal positionSize;
+
+    // --------------------- METRICAS ---------------------
+
     @Column(name = "pips_sl")
     private Integer pipsSL;
 
     @Column(name = "pips_tp")
     private Integer pipsTP;
 
-    // Ganancia bruta ($)
+    // Nuevo → pips reales ganados/perdidos
+    @Column(name = "pips_result")
+    private Integer pipsResult;
+
+    // Nuevo → cuánto se arriesgó ($)
+    @Column(name = "risk_amount", precision = 10, scale = 2)
+    private BigDecimal riskAmount;
+
+    // Nuevo → R real final (netPnl / riskAmount)
+    @Column(name = "real_rr", precision = 5, scale = 2)
+    private BigDecimal realRR;
+
     @Column(name = "gross_pnl", precision = 10, scale = 2)
     private BigDecimal grossPnl;
 
-    // Comisión ($)
     @Column(name = "commission", precision = 10, scale = 2)
     private BigDecimal commission;
 
-    // Ganancia neta ($)
+    // Nuevo → coste de swap
+    @Column(name = "swap", precision = 10, scale = 2)
+    private BigDecimal swap;
+
     @Column(name = "net_pnl", precision = 10, scale = 2)
     private BigDecimal netPnl;
 
-    // Max RR alcanzado
+    // max RR alcanzado durante la operación
     @Column(name = "max_rr", precision = 5, scale = 2)
     private BigDecimal maxRR;
+
+    // --------------------- OTROS ---------------------
 
     @OneToMany(
             mappedBy = "trade",
@@ -126,8 +155,4 @@ public class Trade {
 
     @Column(name = "what_to_improve", columnDefinition = "text")
     private String whatToImprove;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 }
