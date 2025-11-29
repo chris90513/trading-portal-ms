@@ -20,8 +20,6 @@ public class Trade {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // --------------------- RELACIONES ---------------------
-
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
@@ -42,9 +40,6 @@ public class Trade {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // --------------------- DATOS DEL TRADE ---------------------
-
-    // Ticket único del broker / prop firm
     @Column(name = "broker_ticket", length = 50)
     private String brokerTicket;
 
@@ -75,18 +70,21 @@ public class Trade {
     @Column(name = "bias_correct")
     private Boolean biasCorrect;
 
-    // --------------------- PRECIOS ---------------------
-
     @Column(name = "entry_price", precision = 15, scale = 5, nullable = false)
     private BigDecimal entryPrice;
 
     @Column(name = "exit_price", precision = 15, scale = 5, nullable = false)
     private BigDecimal exitPrice;
 
+    @Column(name = "take_profit", precision = 15, scale = 5)
+    private BigDecimal takeProfitPrice;
+
+    @Column(name = "stop_loss", precision = 15, scale = 5)
+    private BigDecimal stopLossPrice;
+
     @Column(name = "position_size", precision = 10, scale = 2, nullable = false)
     private BigDecimal positionSize;
 
-    // --------------------- METRICAS ---------------------
 
     @Column(name = "pips_sl")
     private Integer pipsSL;
@@ -94,15 +92,14 @@ public class Trade {
     @Column(name = "pips_tp")
     private Integer pipsTP;
 
-    // Nuevo → pips reales ganados/perdidos
     @Column(name = "pips_result")
     private Integer pipsResult;
 
-    // Nuevo → cuánto se arriesgó ($)
+    // cuánto se arriesgó ($)
     @Column(name = "risk_amount", precision = 10, scale = 2)
     private BigDecimal riskAmount;
 
-    // Nuevo → R real final (netPnl / riskAmount)
+    // N (netPnl / riskAmount)
     @Column(name = "real_rr", precision = 5, scale = 2)
     private BigDecimal realRR;
 
@@ -112,18 +109,18 @@ public class Trade {
     @Column(name = "commission", precision = 10, scale = 2)
     private BigDecimal commission;
 
-    // Nuevo → coste de swap
     @Column(name = "swap", precision = 10, scale = 2)
     private BigDecimal swap;
 
     @Column(name = "net_pnl", precision = 10, scale = 2)
     private BigDecimal netPnl;
 
-    // max RR alcanzado durante la operación
+    @Column(name = "max_price", precision = 15, scale = 5)
+    private BigDecimal maxPrice;
+
     @Column(name = "max_rr", precision = 5, scale = 2)
     private BigDecimal maxRR;
 
-    // --------------------- OTROS ---------------------
 
     @OneToMany(
             mappedBy = "trade",
@@ -137,6 +134,7 @@ public class Trade {
             name = "trade_emotions",
             joinColumns = @JoinColumn(name = "trade_id")
     )
+
     @Enumerated(EnumType.STRING)
     @Column(name = "emotion", nullable = false, length = 20)
     private Set<Emotion> emotions = new HashSet<>();
@@ -155,4 +153,5 @@ public class Trade {
 
     @Column(name = "what_to_improve", columnDefinition = "text")
     private String whatToImprove;
+
 }
