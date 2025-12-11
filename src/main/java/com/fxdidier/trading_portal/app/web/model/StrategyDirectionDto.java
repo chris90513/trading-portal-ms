@@ -3,7 +3,6 @@ package com.fxdidier.trading_portal.app.web.model;
 public record StrategyDirectionDto(
         Long id,
         Long strategyId,
-        String code,
         String name,
         boolean global,
         Long ownerId,

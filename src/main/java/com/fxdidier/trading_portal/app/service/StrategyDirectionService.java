@@ -121,11 +121,6 @@ public class StrategyDirectionService {
             throw new SecurityException("You cannot update this direction");
         }
 
-        // Validar code único si cambia
-        if (!entity.getCode().equals(request.code())
-                && repository.existsByCodeAndStrategyId(request.code(), request.strategyId())) {
-            throw new IllegalArgumentException("Direction code already exists for this strategy");
-        }
 
         mapper.updateFromRequest(request, entity);
 

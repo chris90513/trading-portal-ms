@@ -15,6 +15,8 @@ public interface AccountMapper {
     @Mapping(target = "brokerName",      source = "broker.name")
     @Mapping(target = "accountTypeName", source = "accountType.name")
     @Mapping(target = "statusName",      source = "status.name")
+    @Mapping(target = "evaluationProgramName", source = "evaluationProgram.name")
+    @Mapping(target = "evaluationStepName",    source = "evaluationStep.name")
     AccountSummaryDto toSummaryDto(Account account);
 
     // ========== Entity -> Detail DTO ==========

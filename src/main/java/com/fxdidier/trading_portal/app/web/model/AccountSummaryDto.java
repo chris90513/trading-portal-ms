@@ -9,5 +9,7 @@ public record AccountSummaryDto(
         String brokerName,
         String accountTypeName,
         String statusName,
-        BigDecimal initialBalance
+        BigDecimal initialBalance,
+        String evaluationProgramName,
+        String evaluationStepName
 ) {}

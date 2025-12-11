@@ -19,10 +19,6 @@ public class StrategyDirection {
     @JoinColumn(name = "strategy_id")
     private Strategy strategy;
 
-    // Código para lógica interna
-    @Column(nullable = false, length = 50)
-    private String code;   // "RANGE_1H", "RANGE_30M", "CONTINUATION"
-
     // Texto que ves en la UI / Notion
     @Column(nullable = false, length = 100)
     private String name;   // "Rango 1H", "Rango 30m", "Continuación"

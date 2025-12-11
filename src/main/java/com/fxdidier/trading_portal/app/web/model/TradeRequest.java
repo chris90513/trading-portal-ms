@@ -2,9 +2,9 @@ package com.fxdidier.trading_portal.app.web.model;
 
 import com.fxdidier.trading_portal.util.enums.*;
 import jakarta.validation.constraints.NotNull;
-
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 
 public record TradeRequest(
@@ -65,5 +65,7 @@ public record TradeRequest(
         String details,
         String possibleEntries,
         String whatWentWell,
-        String whatToImprove
+        String whatToImprove,
+
+        List<String> urls
 ) {}

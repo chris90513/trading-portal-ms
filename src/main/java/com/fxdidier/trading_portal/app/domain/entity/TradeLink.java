@@ -26,6 +26,4 @@ public class TradeLink {
     @Column(name = "link_type", nullable = false, length = 20)
     private LinkType linkType;
 
-    @Column(length = 500)
-    private String description;
 }

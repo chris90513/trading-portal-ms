@@ -7,12 +7,18 @@ import com.fxdidier.trading_portal.app.web.model.PageResponse;
 import com.fxdidier.trading_portal.app.web.model.TradeDto;
 import com.fxdidier.trading_portal.app.web.model.TradeRequest;
 import com.fxdidier.trading_portal.configuration.security.CurrentUserService;
+import com.fxdidier.trading_portal.util.enums.LinkType;
+import io.swagger.v3.oas.models.links.Link;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -74,6 +80,18 @@ public class TradeService {
         }
 
         Trade trade = tradeMapper.toEntity(request);
+        if(!request.urls().isEmpty()) {
+            List<TradeLink> tradeLinks = new ArrayList<>();
+           request.urls().forEach(url -> {
+               TradeLink tradeLink = new TradeLink();
+                tradeLink.setTrade(trade);
+                tradeLink.setUrl(url);
+                tradeLink.setLinkType( LinkType.TRADINGVIEW);
+                tradeLinks.add(tradeLink);
+           });
+              trade.setLinks(tradeLinks);
+        }
+
 
         // relaciones principales
         trade.setAccount(account);

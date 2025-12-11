@@ -9,8 +9,7 @@ public record StrategyConfirmationRequest(
         @NotNull
         Long strategyId,
 
-        @NotBlank
-        String code,
+        String description,
 
         @NotBlank
         String name,

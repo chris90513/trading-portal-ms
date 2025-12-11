@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface StrategyDirectionRepository extends JpaRepository<StrategyDirection, Long> {
 
-    boolean existsByCodeAndStrategyId(String code, Long strategyId);
-
     List<StrategyDirection> findByGlobalTrueOrOwnerIdOrderByNameAsc(Long ownerId);
 
     List<StrategyDirection> findByStrategyId(Long strategyId);

@@ -73,9 +73,6 @@ public class StrategyConfirmationService {
         Strategy strategy = strategyRepository.findById(request.strategyId())
                 .orElseThrow(() -> new EntityNotFoundException("Strategy not found"));
 
-        if (repository.existsByCodeAndStrategyId(request.code(), request.strategyId())) {
-            throw new IllegalArgumentException("Confirmation code already exists for this strategy");
-        }
 
         StrategyConfirmation entity = mapper.toEntity(request);
 

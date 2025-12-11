@@ -19,13 +19,11 @@ public class StrategyConfirmation {
     @JoinColumn(name = "strategy_id")
     private Strategy strategy;
 
-    @Column(nullable = false, length = 50)
-    private String code;
-
     @Column(nullable = false, length = 150)
     private String name;
 
-
+    @Column(nullable = true)
+    private String description;
 
     // true = confirmación global (para todos)
     @Column(name = "is_global", nullable = false)
